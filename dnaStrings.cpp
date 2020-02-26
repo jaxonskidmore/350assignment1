@@ -37,27 +37,59 @@ ofstream fileOut;
 float meanCalc(){
 
   mean = dnaSum / lineCount;
-  cout << "Mean: " << mean << endl;
+  return mean;
 
 }
 //calculation for the mean, will be called for stDev/variance/gaussian later
 
 float varianceCalc(){
 //calculates the variance code, used while loop and calling it up here
-  float variance = varSum / lineCount;
-  cout << variance << endl;
+  variance = varSum / lineCount;
+  return variance;
 }
 
 float stdevCalc(){
 //calculates the stDev from the output of varianceCalc
-  float stDev = (sqrt(varianceCalc()));
-  cout << stDev << endl;
+  float stDev = sqrt(varianceCalc());
+  return stDev;
+}
+string gaussianCalc(){
+  string dnaStr = "";
+  for (int i = 0; i < 1000; ++i){
+    float a = rand() / double(RAND_MAX);
+    float b = rand() / double(RAND_MAX);
+    float c = sqrt(-2*log(a)) * cos(2 * M_PI * b);
+    float d = stdevCalc() * c + meanCalc();
+    //for loop makes the 1000 lines and mathematical equations
+    for (int j = 0; j < d; ++j) {
+      float randn = rand() / double(RAND_MAX);
+      //random float 0-1
+      if (randn < countA / dnaSum) {
+        dnaStr += "A";
+      }
+      if (randn < (countC+countA) / dnaSum && randn >= countA / dnaSum) {
+        dnaStr += "C";
+      }
+      if (randn < (countG+countC+countA) / dnaSum && randn >= (countC+countA) / dnaSum) {
+        dnaStr += "T";
+      }
+      if (randn <= 1 && randn >= (countG+countC+countA) / dnaSum) {
+        dnaStr += "G";
+      }
+      //this takes the probability of the single letters and compares it to the 1000
+      //random numbers
+    }
+    dnaStr += "\n";
+  }
+  return dnaStr;
 }
 
 int main(int argc, char **argv){
 
   string fileName = argv[1];
   //retrieves whatever is typed in terminal
+//  cout << "enter a file name: " << endl;
+//  cin >> fileName;
   fileIn.open(fileName);
 
   bool end = true;
@@ -138,7 +170,7 @@ int main(int argc, char **argv){
             ct++;
             pairSum++;
           }
-          else if (dna1 == 'c') {
+          else if (dna1 == 'g') {
             cg++;
             pairSum++;
           }
@@ -172,21 +204,25 @@ int main(int argc, char **argv){
         //nested if loop
       }
     }
-//maybe close and open file again?
+    fileIn.close();
+    fileIn.open(fileName);
+  //close and reopen the file to analyze variance
     while (getline(fileIn, line))
     {
       float lineLength = line.length();
-      float halfVar = pow(lineLength - meanCalc(),2);
+      float subtract = lineLength - meanCalc();
+      float halfVar = pow(subtract,2);
       varSum += halfVar;
-      //get line length, again
-      //get length - mean()
+      //line length, again
+      //length - mean()
       //add that to varSum
+      //steps to calculating variance
     }
-
-    meanCalc();
-    varianceCalc();
-    stdevCalc();
-    cout << "Probability of A: " << countA / dnaSum * 100 << '%' << endl;
+    fileIn.close();
+    fileOut.open("jaxonskidmore.out");
+    fileOut << "Mean: " << meanCalc() << endl;
+    fileOut << "Variance: " << varianceCalc() << endl;
+    fileOut << "Standard Deviation: " << stdevCalc() << endl;
     fileOut << "Probability of A: " << countA / dnaSum * 100 << '%' << endl;
     fileOut << "Probability of C: " << countC / dnaSum * 100 << '%' << endl;
     fileOut << "Probability of T: " << countT / dnaSum * 100 << '%' << endl;
@@ -208,11 +244,13 @@ int main(int argc, char **argv){
     fileOut << "Probability of GC: " << gc / pairSum * 100 << '%' << endl;
     fileOut << "Probability of GT: " << gt / pairSum * 100 << '%' << endl;
     fileOut << "Probability of GG: " << gg / pairSum * 100 << '%' << endl;
-    //calculates the probability of the paired dna strands
+//calculates the probability of the paired dna strands
+    fileOut << "Gaussian is: " << endl;
+    fileOut << gaussianCalc() << endl;
+//the gaussian output to the file
     char userChoice;
     cout << "Here are your calculations would you like to continue? ('y', 'Y'): for yes, and anything else for no. " << endl;
     cin >> userChoice;
-
     //asks the user if they would like to continue more analysis, accepting multiple forms of yes
     if(userChoice == 'y' || userChoice == 'Y'){
 
@@ -224,7 +262,24 @@ int main(int argc, char **argv){
       end = false;
     }
     //breaks the while loop if the user inputs anything besides yes, y, Y, Yes
-
+    string line = "";
+    varSum = 0.0;
+    countA = 0;
+    countC = 0;
+    countT = 0;
+    countG = 0;
+    aa = 0; ac = 0; at = 0; ag = 0;
+    ca = 0; cc = 0; ct = 0; cg = 0;
+    ta = 0; tc = 0; tt = 0; tg = 0;
+    ga = 0; gc = 0; gt = 0; gg = 0;
+    lineCount = 0.0;
+    dnaSum = 0.0;
+    pairSum = 0.0;
+    sum = 0.0;
+    mean = 0.0;
+    stDev = 0.0;
+    variance = 0.0;
+    //this will reinitialize all of the variables after the user might want to restart
   }
 
 }
